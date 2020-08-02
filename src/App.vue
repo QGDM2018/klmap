@@ -8,47 +8,33 @@
   margin: 0;
 }
 #app {
+  position: relative;
   padding: 0;
   margin: 0;
   width: 100vw;
-  min-width: 1080px;
-  color: #fff;
-  background-color: #5b08c3;
-  overflow-x: hidden;
+  min-width: 1280px;
+  height: 100vh;
+  color: #000;
+  background-image: url(./assets/bg2.jpg);
+  background-size: 100% auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
   .top {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
     font-family: "title";
-    .title {
-      display: flex;
-      justify-content: center;
-      letter-spacing: 0.1em;
-      svg {
-        height: 2em;
-        width: 20em;
-        font-size: 50px;
-      }
-      .text-line {
-        letter-spacing: 0.1em;
-      }
-      .anim-shape {
-        transform: translate(0, 0);
-        animation: moving-panel 1s ease-in-out infinite alternate;
-      }
-      .shadow {
-        transform: translate(0.05em, 0.05em);
-      }
-      .anim-shape--shadow {
-        fill: #000;
-        fill-opacity: 0.3;
-      }
-    }
+    height: 18vh;
     .nav {
       position: relative;
       margin: 0 auto;
       width: 25em;
-      height: 2em;
-      font-size: 30px;
-      line-height: 2em;
+      height: 8vh;
+      font-size: 4vh;
+      line-height: 8vh;
       overflow: hidden;
       .con {
         display: flex;
@@ -67,7 +53,7 @@
       }
       .bg {
         position: relative;
-        height: 2em;
+        height: 8vh;
         width: 6em;
         background: #000;
         transition: transform 0.3s;
@@ -83,7 +69,7 @@
         position: absolute;
         top: 0;
         left: -1.97em;
-        border-width: 2em 2em 0 0;
+        border-width: 8vh 2em 0 0;
         border-style: solid;
         border-color: transparent #000;
       }
@@ -92,7 +78,7 @@
         position: absolute;
         top: 0;
         right: -1.97em;
-        border-width: 0 0 2em 2em;
+        border-width: 0 0 8vh 2em;
         border-style: solid;
         border-color: transparent #000;
       }
@@ -108,48 +94,22 @@
     }
   }
 }
-@keyframes moving-panel {
-  0% {
-    transform: translate(-1.1em, 0);
-  }
-  100% {
-    transform: translate(1.1em, 0);
-  }
-}
 </style>
 <template>
   <div id="app">
     <div class="top">
-      <div class="title">
-        <svg>
-          <clipPath id="cp-text">
-            <text
-              text-anchor="middle"
-              x="50%"
-              y="50%"
-              dy=".35em"
-              class="text-line"
-            >构建民航业知识图谱并实现语义查询</text>
-          </clipPath>
-          <g clip-path="url(#cp-text)" class="shadow">
-            <rect width="100%" height="100%" class="anim-shape anim-shape--shadow" />
-          </g>
-          <g clip-path="url(#cp-text)" class="colortext">
-            <rect width="100%" height="100%" fill="#9E1826" class="anim-shape" />
-            <rect width="80%" height="100%" fill="#111111" class="anim-shape" />
-            <rect width="60%" height="100%" fill="#65BFA6" class="anim-shape" />
-            <rect width="40%" height="100%" fill="#F2CD5C" class="anim-shape" />
-            <rect width="20%" height="100%" fill="#F26444" class="anim-shape" />
-          </g>
-        </svg>
-      </div>
+      <svgTitle msg="构建民航业知识图谱并实现语义查询"></svgTitle>
       <div class="nav">
         <div class="con">
-          <div class="left" @click="toMap">知识图谱</div>
-          <div class="right" @click="toSearch">语义查询</div>
+          <div class="left" @click="toMap" :style="{color: nowPage=='myMap'?'#fff':'#000'}">知识图谱</div>
+          <div
+            class="right"
+            @click="toSearch"
+            :style="{color: nowPage=='search'?'#fff':'#000'}"
+          >语义查询</div>
         </div>
         <div class="bg" :class="bgClass">
-          <span v-show="router=='404'" style="font-weight: bold">404</span>
+          <span v-show="nowPage=='404'" style="font-weight: bold;color:#fff">404</span>
           <div class="leftline" style="left: -20em; bottom: 0; width: 19em"></div>
           <div class="rightline" style="right: -20em; top: 0; width: 19em"></div>
         </div>
@@ -160,43 +120,52 @@
 </template>
 
 <script>
+import svgTitle from "@/components/svgTitle.vue";
 export default {
-  data() {
-    return {
-      router: "map"
-    };
+  components: {
+    svgTitle
   },
   methods: {
     toMap() {
-      this.router = "map";
-      this.$router.replace({ name: "map" });
+      this.$store.commit("switchIndx", "myMap");
+      this.toIndex()
     },
     toSearch() {
-      this.router = "search";
-      this.$router.replace({ name: "search" });
+      this.$store.commit("switchIndx", "search");
+      this.toIndex()
+    },
+    toIndex() {
+      if (this.$route.name != "index") {
+        this.$router.replace({ name: "index" });
+      }
     }
   },
   computed: {
+    nowPage: function() {
+      if (this.$route.name == "index") {
+        return this.$store.state.indexType;
+      } else {
+        return "404";
+      }
+    },
     bgClass: function() {
-      if (this.router == "map") {
+      if (this.nowPage == "myMap") {
         return "showLeft";
-      } else if (this.router == "search") {
+      } else if (this.nowPage == "search") {
         return "showRight";
       } else {
         return "showMiddle";
       }
     }
-  },
-  watch: {
-    $route: {
-      handler: function(val, oldVal) {
-        if(val.name == 404) {
-          this.router = '404';
-        }
-      },
-      deep: true
-    }
   }
+  // watch: {
+  //   $route: {
+  //     handler: function(val, oldVal) {
+  //       this.router = val.name;
+  //     },
+  //     deep: true
+  //   }
+  // }
 };
 </script>
 

@@ -6,17 +6,12 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    redirect: '/map'
+    redirect: '/index'
   },
   {
-    path: '/map',
-    name: 'map',
-    component: () => import('../views/map.vue')
-  },
-  {
-    path: '/search',
-    name: 'search',
-    component: () => import('../views/search.vue')
+    path: '/index',
+    name: 'index',
+    component: () => import('../views/index.vue')
   },
   {
     path: '*',
