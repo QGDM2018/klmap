@@ -1,4 +1,6 @@
-import * as d3 from 'd3'
+import * as d3 from 'd3';
+import axios from 'axios';
+import { Message } from 'view-design';
 var width = document.body.clientWidth; // svg 宽度
 var height = document.body.clientHeight; // svg 高度
 var svg; // svg容器
@@ -11,6 +13,38 @@ var links; // 线集合
 var linksText; // 线上文本集合
 var gs; // 点和点文字集合
 var ifInit = false;
+let labelArr = [
+    '通用航空',
+    '适航审定',
+    '运输航空',
+    '运输效率与经济效益',
+    '规章发布',
+    '节能减排',
+    '航空安全与服务质量',
+    '社会责任',
+    '法规和信用体系建设',
+    '教育与科技创新',
+    '工会工作',
+    '对外关系',
+    '固定资产投资',
+    '专业技术人员'
+];
+let colorArr = [
+    '#FF4400',
+    '#FF9999',
+    '#CC0033',
+    '#999966',
+    '#3399CC',
+    '#6666CC',
+    '#99CC66',
+    '#FF6666',
+    '#99CC67',
+    '#0099e4',
+    '#ec91CC',
+    '#bd9985',
+    '#007eCC',
+    '#8819ee'
+];
 // 关键函数，实时更新点、线位置    
 function ticked() {
     links
@@ -61,12 +95,13 @@ function init() {
         return;
     }
     ifInit = true;
+    width = width < 1280 ? 1280 : width;
     svg = d3.select(".myMap")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
         .call(d3.zoom() // zoom事件，缩放，移动svg图
-            .scaleExtent([0.5, 1.5]) // 缩放范围
+            .scaleExtent([0.25, 1.5]) // 缩放范围
             .on('zoom', () => {
                 d3.select('.svgCon')
                     .attr("transform", d3.event.transform)
@@ -92,14 +127,14 @@ function init() {
 
     //设置一个color的颜色比例尺，为了让不同的扇形呈现不同的颜色
     colorScale = d3.scaleOrdinal()
-        .domain(d3.range(10))
-        .range(['#FF9900', '#FF9999', '#CC0033', '#999966', '#3399CC', '#6666CC', '#99CC66', '#FF6666', '#99CCCC', '#0099CC']);
+        .domain(labelArr)
+        .range(colorArr);
 
     // 力模拟器
     forceSimulation = d3.forceSimulation()
         .force("link", d3.forceLink())
         .force("center", d3.forceCenter())
-        .force("charge",d3.forceManyBody().strength(-500))
+        .force("charge", d3.forceManyBody().strength(-500))
         .force("collide", d3.forceCollide(50).strength(1).iterations(5))
 
     //生成节点数据
@@ -108,7 +143,7 @@ function init() {
     //生成边数据
     forceSimulation.force("link")
         .links(edges)
-        .distance(400)
+        .distance(250)
         .strength(1)
 
     //设置图形的中心位置
@@ -138,9 +173,10 @@ function init() {
 // 生成新的点
 function addNodes(newNode) {
     nodes.push(newNode);
+    console.log(nodes.length)
     // 新建一个<g>
     let new_gs = gs
-        .data(nodes, d => d.name)
+        .data(nodes, d => d.id)
         .enter()
         .append("g")
         .attr('class', (d, i) => `circleText_${i}`)
@@ -151,17 +187,15 @@ function addNodes(newNode) {
             .on("end", ended)
         )
         .on('click', function (d, i) {
-            
-            clickFun(i, d.id);
-            console.log(edges)
+            if (!d.clicked) {
+                d.clicked = true;
+                clickFun(i, d.id);
+            }
         })
     // 在<g>里绘制节点
     new_gs.append("circle")
         .attr("r", (d, i) => 12)
-        .attr("fill", () => {
-            let randomIndex = Math.floor(Math.random() * 10) // 0-9的随机整数
-            return colorScale(randomIndex);
-        })
+        .attr("fill", d => colorScale(d.label))
 
     // 在<g>里写入文字
     new_gs.append("text")
@@ -175,7 +209,6 @@ function addNodes(newNode) {
         .text(d => d.name)
     gs = new_gs.merge(gs); // 合并
     forceSimulation.nodes(nodes);
-    forceSimulation.alpha(1).restart();
 }
 // 生成新的线
 function addEdges(newEdge) {
@@ -218,60 +251,63 @@ function addEdges(newEdge) {
                 .attr('stroke', '#222')
         }).merge(linksText);
     forceSimulation.force('link').links(edges);
-    forceSimulation.alpha(1).restart();
+    
 }
 // 点击一个点
 let tsstid = 999;
 function clickFun(source, id) {
-    //console.log(`source = ${source}, id = ${id}`);
-    
-
-    let res = [
-        {
-            to: { id: 3, name: ++tsstid },
-            relation: '测试'+tsstid
-        },
-        {
-            to: { id: 4, name: ++tsstid },
-            relation: '测试'+tsstid
-        },
-        {
-            to: { id: 5, name: ++tsstid },
-            relation: '测试'+tsstid
-        },
-        {
-            to: { id: 6, name: ++tsstid },
-            relation: '测试'+tsstid
-        },
-        {
-            to: { id: 7, name: ++tsstid },
-            relation: '测试'+tsstid
-        },
-        {
-            to: { id: 8, name: ++tsstid },
-            relation: '测试'+tsstid
-        }
-    ];
-    for (let i = 0; i < res.length; i++) {
+    // axios.get(`/api/graph/${id}/`)
+    //     .then(res => {
+    //         if (res.data.code == 100) {
+    //             let graph = res.data.data.graph;
+    //             let len = graph.length;
+    //             let test = {
+    //                 end_node: { id: 14, name: "通用航空", label: "通用航空" },
+    //                 relationship: "包含",
+    //                 start_node: { id: 0, name: "民用航空", label: "民航" }
+    //             };
+    //             console.log(graph[26])
+    //             for (let i = 0; i < 30; i++) {
+                    
+    //                 addNodes({
+    //                     clicked: false,
+    //                     ...graph[i].end_node
+    //                 })
+    //                 addEdges({
+    //                     source: source,
+    //                     target: nodes.length - 1,
+    //                     relation: graph[i].relationship
+    //                 })
+    //             }
+    //             forceSimulation.alpha(1).restart();
+    //         } else {
+    //             Message.warning(res.data.msg);
+    //         }
+    //     })
+    // return;
+    for (let i = 0; i < 12; i++) {
         addNodes({
-            name: res[i].to.name,
-            id: res[i].to.id,
+            name: '测试' + nodes.length,
+            id: nodes.length + 2,
+            label: '民航',
+            clicked: false
         })
         addEdges({
             source: source,
             target: nodes.length - 1,
-            relation: res[i].relation
+            relation: '测试2'
         })
     }
+    forceSimulation.alpha(1).restart();
 
 }
 // 删除被点击的点的父节点的其他图谱
 function delPreMap(source, id) {
-    
+
 }
 // 获取该点的下一级图谱
 function getNextMap() {
-    
+
 }
 
 export default {

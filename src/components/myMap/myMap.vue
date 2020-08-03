@@ -17,19 +17,10 @@ export default {
   data() {
     return {};
   },
-  methods: {
-    click() {},
-    add() {}
-  },
+  methods: {},
   mounted() {
-    if (!force.ifInit) {
-      force.init();
-      force.addNodes({ name: "test", id: "1"});
-      force.addNodes({ name: "test2", id: "2"});
-      force.addNodes({ name: "test3", id: "3", source: 0 });
-      force.addEdges({ source: 0, target: 1, relation: "2" });
-      force.addEdges({ source: 0, target: 2, relation: "3" });
-    }
+    force.init();
+    force.addNodes({ id: 0, name: "民用航空", label: "民航", clicked: false });
   }
 };
 </script>

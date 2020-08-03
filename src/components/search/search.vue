@@ -86,13 +86,22 @@ export default {
     },
     reply(sendStr) {
       // 回复信息
-      setTimeout(() => {
-        this.$store.commit("addDiaLog", {
-          type: "left",
-          message: "回复：" + sendStr
+      console.log(this.$httpUrl);
+      this.$axios
+        .post("/api/qa/", {
+          question: sendStr
+        })
+        .then(res => {
+          if (res.data.code == 100) {
+            this.$store.commit("addDiaLog", {
+              type: "left",
+              message: res.data.data.answer
+            });
+            this.$refs.dialogCon.scrollIntoEnd();
+          } else {
+            this.$Message.warning(res.data.msg);
+          }
         });
-        this.$refs.dialogCon.scrollIntoEnd();
-      }, 1000);
     }
   },
   components: {
