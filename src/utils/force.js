@@ -12,7 +12,11 @@ var forceSimulation; // 力模拟器
 var links; // 线集合
 var linksText; // 线上文本集合
 var gs; // 点和点文字集合
-var ifInit = false;
+let ctrlClick = false; // 控制点击频率
+let httpUrl =
+    process.env.NODE_ENV === "production"
+        ? process.env.VUE_APP_URL
+        : '/localHttp';
 let labelArr = [
     '通用航空',
     '适航审定',
@@ -30,20 +34,20 @@ let labelArr = [
     '专业技术人员'
 ];
 let colorArr = [
-    '#FF4400',
-    '#FF9999',
-    '#CC0033',
-    '#999966',
-    '#3399CC',
-    '#6666CC',
-    '#99CC66',
-    '#FF6666',
-    '#99CC67',
-    '#0099e4',
-    '#ec91CC',
-    '#bd9985',
-    '#007eCC',
-    '#8819ee'
+    '#521eee',
+    '#FF3333',
+    '#FFAA33',
+    '#FFFF77',
+    '#CCFF33',
+    '#00DD00',
+    '#00BBFF',
+    '#CCBBFF',
+    '#9F88FF',
+    '#FF3EFF',
+    '#770077',
+    '#880000',
+    '#CC6600',
+    '#FF88C2'
 ];
 // 关键函数，实时更新点、线位置    
 function ticked() {
@@ -91,10 +95,6 @@ function ended(d, i) {
 }
 // 初始化
 function init() {
-    if (ifInit) {
-        return;
-    }
-    ifInit = true;
     width = width < 1280 ? 1280 : width;
     svg = d3.select(".myMap")
         .append("svg")
@@ -173,7 +173,6 @@ function init() {
 // 生成新的点
 function addNodes(newNode) {
     nodes.push(newNode);
-    console.log(nodes.length)
     // 新建一个<g>
     let new_gs = gs
         .data(nodes, d => d.id)
@@ -190,6 +189,8 @@ function addNodes(newNode) {
             if (!d.clicked) {
                 d.clicked = true;
                 clickFun(i, d.id);
+            } else {
+                Message.info("已经点击过了");
             }
         })
     // 在<g>里绘制节点
@@ -251,55 +252,59 @@ function addEdges(newEdge) {
                 .attr('stroke', '#222')
         }).merge(linksText);
     forceSimulation.force('link').links(edges);
-    
+
+}
+// 查找指定id的点在数组nodes的位置
+function findNodesIndex(id) {
+    let i;
+    let len = nodes.length;
+    for (i = 0; i < len; i++) {
+        if (nodes[i].id == id) {
+            break;
+        }
+    }
+    return i;
 }
 // 点击一个点
-let tsstid = 999;
 function clickFun(source, id) {
-    // axios.get(`/api/graph/${id}/`)
-    //     .then(res => {
-    //         if (res.data.code == 100) {
-    //             let graph = res.data.data.graph;
-    //             let len = graph.length;
-    //             let test = {
-    //                 end_node: { id: 14, name: "通用航空", label: "通用航空" },
-    //                 relationship: "包含",
-    //                 start_node: { id: 0, name: "民用航空", label: "民航" }
-    //             };
-    //             console.log(graph[26])
-    //             for (let i = 0; i < 30; i++) {
-                    
-    //                 addNodes({
-    //                     clicked: false,
-    //                     ...graph[i].end_node
-    //                 })
-    //                 addEdges({
-    //                     source: source,
-    //                     target: nodes.length - 1,
-    //                     relation: graph[i].relationship
-    //                 })
-    //             }
-    //             forceSimulation.alpha(1).restart();
-    //         } else {
-    //             Message.warning(res.data.msg);
-    //         }
-    //     })
-    // return;
-    for (let i = 0; i < 12; i++) {
-        addNodes({
-            name: '测试' + nodes.length,
-            id: nodes.length + 2,
-            label: '民航',
-            clicked: false
-        })
-        addEdges({
-            source: source,
-            target: nodes.length - 1,
-            relation: '测试2'
-        })
+    if (ctrlClick) {
+        return;
     }
-    forceSimulation.alpha(1).restart();
-
+    ctrlClick = true;
+    axios.get(`${httpUrl}/graph/${id}/`)
+        .then(res => {
+            if (res.data.code == 100) {
+                let graph = res.data.data.graph;
+                let len = graph.length;
+                if (len != 0) {
+                    console.log(graph)
+                    for (let i = 0; i < len; i++) {
+                        let index = findNodesIndex(graph[i].end_node.id);
+                        if (index == nodes.length) {
+                            // 该点未画，则在svg新画这个点
+                            addNodes({
+                                clicked: false,
+                                ...graph[i].end_node
+                            })
+                        }
+                        // 连线
+                        addEdges({
+                            source: source,
+                            target: index,
+                            relation: graph[i].relationship
+                        })
+                    }
+                    forceSimulation.alpha(1).restart();
+                }
+            } else {
+                Message.warning(res.data.msg);
+            }
+            ctrlClick = false;
+        })
+        .catch(err => {
+            console.error(err)
+            ctrlClick = false;
+        })
 }
 // 删除被点击的点的父节点的其他图谱
 function delPreMap(source, id) {
@@ -312,9 +317,9 @@ function getNextMap() {
 
 export default {
     init,
-    ifInit,
     nodes,
     edges,
     addNodes,
-    addEdges
+    addEdges,
+    clickFun
 }

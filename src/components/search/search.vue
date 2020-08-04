@@ -86,9 +86,8 @@ export default {
     },
     reply(sendStr) {
       // 回复信息
-      console.log(this.$httpUrl);
       this.$axios
-        .post("/api/qa/", {
+        .post(this.$httpUrl + "/qa/", {
           question: sendStr
         })
         .then(res => {
@@ -106,9 +105,6 @@ export default {
   },
   components: {
     dialogCon
-  },
-  mounted() {
-    console.log(this.$Message);
   }
 };
 </script>

@@ -20,7 +20,8 @@ export default {
   methods: {},
   mounted() {
     force.init();
-    force.addNodes({ id: 0, name: "民用航空", label: "民航", clicked: false });
+    force.addNodes({ id: 0, name: "民用航空", label: "民航", clicked: true });
+    force.clickFun(0, 0);
   }
 };
 </script>
