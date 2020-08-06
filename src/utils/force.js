@@ -71,15 +71,20 @@ function started(d, i) {
     }
     d.fx = d.x;
     d.fy = d.y;
-    d3.select(`.circleText_${i}`)
-        .select('circle')
-        .attr('stroke', '#333')
-        .attr('stroke-width', '5px')
+    
+
 }
 // 拖动
-function dragged(d) {
+function dragged(d, i) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
+    d3.select(`.circleText_${i}`)
+        .select('circle')
+        .attr('stroke-width', '5px')
+    d3.select(`.circleText_${i}`)
+        .select('text')
+        .attr('fill', '#f40')
+        .attr("font-size", 20)
 }
 // 结束拖动
 function ended(d, i) {
@@ -90,12 +95,15 @@ function ended(d, i) {
     d.fy = null;
     d3.select(`.circleText_${i}`)
         .select('circle')
-        .attr('stroke', 'none')
-        .attr('stroke-width', 'none')
+        .attr('stroke-width', d => d.clicked ? '2px' : '0')
+    d3.select(`.circleText_${i}`)
+        .select('text')
+        .attr('fill', '#000')
+        .attr("font-size", 16)
 }
 // 初始化
 function init() {
-    width = width < 1280 ? 1280 : width;
+    width = width < 1680 ? 1680 : width;
     svg = d3.select(".myMap")
         .append("svg")
         .attr("width", width)
@@ -180,18 +188,15 @@ function addNodes(newNode) {
         .append("g")
         .attr('class', (d, i) => `circleText_${i}`)
         .attr("cursor", 'pointer')
+        .attr('stroke', '#333')
+        .attr('stroke-width', '0')
         .call(d3.drag()
             .on("start", started)
             .on("drag", dragged)
             .on("end", ended)
         )
         .on('click', function (d, i) {
-            if (!d.clicked) {
-                d.clicked = true;
-                clickFun(i, d.id);
-            } else {
-                Message.info("已经点击过了");
-            }
+            clickFun(d, i);
         })
     // 在<g>里绘制节点
     new_gs.append("circle")
@@ -266,12 +271,18 @@ function findNodesIndex(id) {
     return i;
 }
 // 点击一个点
-function clickFun(source, id) {
+function clickFun(d, source) {
     if (ctrlClick) {
         return;
     }
     ctrlClick = true;
-    axios.get(`${httpUrl}/graph/${id}/`)
+    if (d.clicked) {
+        Message.info("已经点击过了");
+        ctrlClick = false;
+        return;
+    }
+    d.clicked = true;
+    axios.get(`${httpUrl}/graph/${d.id}/`)
         .then(res => {
             if (res.data.code == 100) {
                 let graph = res.data.data.graph;
@@ -300,19 +311,14 @@ function clickFun(source, id) {
                 Message.warning(res.data.msg);
             }
             ctrlClick = false;
+            d3.select(`.circleText_${source}`)
+                .select('circle')
+                .attr('stroke-width', '2px')
         })
         .catch(err => {
             console.error(err)
             ctrlClick = false;
         })
-}
-// 删除被点击的点的父节点的其他图谱
-function delPreMap(source, id) {
-
-}
-// 获取该点的下一级图谱
-function getNextMap() {
-
 }
 
 export default {
