@@ -4,9 +4,10 @@ import router from './router'
 import store from './store'
 
 // 按需引入iview
-import { Message } from 'view-design';
+import { Message, Switch } from 'view-design';
 import 'view-design/dist/styles/iview.css';
 Vue.prototype.$Message = Message;
+Vue.component('i-switch', Switch);
 
 // 引入axios
 import axios from 'axios';
