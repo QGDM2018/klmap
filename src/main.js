@@ -1,7 +1,12 @@
 import Vue from 'vue'
 import App from './App.vue'
-import router from './router'
+// import router from './router'
 import store from './store'
+
+// 按需引入 echarts
+var echarts = require('echarts');
+Vue.prototype.$echarts = echarts;
+
 
 // 按需引入iview
 import { Message, Switch } from 'view-design';
@@ -21,7 +26,7 @@ Vue.prototype.$httpUrl =
 
 Vue.config.productionTip = false;
 new Vue({
-  router,
+  // router,
   store,
   Message,
   render: h => h(App)

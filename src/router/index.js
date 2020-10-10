@@ -14,11 +14,6 @@ const routes = [
     component: () => import('../views/index.vue')
   },
   {
-    path: '/test',
-    name: '404',
-    component: () => import('../components/test.vue')
-  },
-  {
     path: '*',
     name: '404',
     component: () => import('../views/404.vue')
@@ -27,10 +22,11 @@ const routes = [
 
 const router = new VueRouter({
   routes,
-  mode: 'history',
-  base: process.env.NODE_ENV === 'production'
-    ? process.env.VUE_APP_STATICURL
-    : '/'
+  mode: 'hash',
+  // mode: 'history',
+  // base: process.env.NODE_ENV === 'production'
+  //   ? process.env.VUE_APP_STATICURL
+  //   : '/'
 })
 
 export default router

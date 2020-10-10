@@ -83,8 +83,8 @@ export default {
   },
   methods: {},
   mounted() {
-    myMap1.drawStart();
-    myMap2.drawAll();
+    // myMap1.drawStart();
+    // myMap2.drawAll();
   }
 };
 </script>

@@ -5,7 +5,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    indexType: 'myMap', // index.vue的显示组件
+    indexType: 'myChart', // index.vue的显示组件
     dialogArr: [ // 对话内容数组
       {
         type: "left",
