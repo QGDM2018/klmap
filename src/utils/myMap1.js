@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import axios from 'axios';
-import { Message } from 'view-design';
+import { Message} from 'view-design';
 var width = document.body.clientWidth; // svg 宽度
 var height = document.body.clientHeight; // svg 高度
 var svg; // svg容器
@@ -17,6 +17,7 @@ let httpUrl =
     process.env.NODE_ENV === "production"
         ? process.env.VUE_APP_URL
         : '/localHttp';
+
 let labelArr = [
     '民航',
     '通用航空',
@@ -104,6 +105,7 @@ function ended(d, i) {
 // 初始化
 function init() {
     width = width < 1680 ? 1680 : width;
+    height = height < 700 ? 700 : height;
     svg = d3.select(".myMap1")
         .attr("width", width)
         .attr("height", height)

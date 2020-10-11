@@ -104,7 +104,9 @@ function ended(d, i) {
 }
 // 初始化
 function init() {
+    console.log(width, height)
     width = width < 1680 ? 1680 : width;
+    height = height < 700 ? 700 : height;
     svg = d3.select(".myMap2")
         .attr("width", width)
         .attr("height", height)

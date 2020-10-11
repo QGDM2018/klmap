@@ -4,14 +4,26 @@ import App from './App.vue'
 import store from './store'
 
 // 按需引入 echarts
-var echarts = require('echarts');
+var echarts = require('echarts/lib/echarts');
+// 引入图
+require("echarts/lib/chart/line");
+require("echarts/lib/chart/bar");
+require("echarts/lib/chart/pie");
+require("echarts/lib/component/polar");
+// 引入提示框和标题组件
+require('echarts/lib/component/tooltip');
+require('echarts/lib/component/title');
 Vue.prototype.$echarts = echarts;
 
 
 // 按需引入iview
-import { Message, Switch } from 'view-design';
+import { Modal, Message, Switch } from 'view-design';
 import 'view-design/dist/styles/iview.css';
 Vue.prototype.$Message = Message;
+Vue.prototype.$Modal = Modal;
+Message.config({
+  top: 150,
+});
 Vue.component('i-switch', Switch);
 
 // 引入axios

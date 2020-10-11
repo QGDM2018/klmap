@@ -14,8 +14,8 @@
     padding: 0;
     margin: 0;
     width: 100vw;
-    min-width: 1280px;
     height: 100vh;
+    min-width: 1280px;
     color: #000;
     background-image: url(./assets/bg2.jpg);
     background-size: 100% auto;
