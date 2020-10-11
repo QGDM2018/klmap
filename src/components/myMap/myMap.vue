@@ -39,8 +39,10 @@
 
         div {
           margin-left: 0.3em;
-          font-size: 0.9em;
           color: #fff;
+          font-weight: normal;
+          font-family: 'title';
+          letter-spacing: 0.1em;
         }
 
       }
@@ -63,7 +65,7 @@
         span {
           color: #333;
           font-size: 15px;
-          font-weight: lighter;
+          font-weight: normal;
         }
       }
     }
@@ -177,35 +179,38 @@
           title: '上传文件更新图谱',
           content: `你确定要上传文件"${myMap_file.name}"`,
           onOk: () => {
+
             this.httpUpload(formData);
           },
         });
       },
       httpUpload(formData) {
-        isUpload = true;
-        // 正在上传
+        isUpload = true; // 正在上传
+        this.$Spin.show(); // 显示遮罩
         setTimeout(()=>{
           // 上传
-          // 上传完毕后，更新图表
-          // 更新图表后：
+          // 上传完毕后，刷新页面
+          this.$Spin.hide();
+          window.location.reload();
 
-
-          isUpload = false;
-          // 上传完毕
-          myMap_file = null;
-          // myMap_file 文件置空
-          this.$refs.input.value = ''
-          // input 的 file 置空
-          this.upLoadInfo = '选择文件更新图谱';
-          // 更新 info 文本提示
-          this.$Message.info('上传成功');
+          // isUpload = false;
+          // // 上传完毕
+          // myMap_file = null;
+          // // myMap_file 文件置空
+          // this.$refs.input.value = ''
+          // // input 的 file 置空
+          // this.upLoadInfo = '选择文件更新图谱';
+          // // 更新 info 文本提示
+          // this.$Spin.hide();
+          // // 关闭遮罩
+          // this.$Message.info('上传成功');
         }, 1000)
 
       }
     },
     mounted() {
-      // myMap1.drawStart();
-      // myMap2.drawAll();
+      myMap1.drawStart();
+      myMap2.drawAll();
     }
   };
 </script>

@@ -20,8 +20,9 @@ Vue.prototype.$echarts = echarts;
 
 
 // 按需引入iview
-import { Modal, Message, Switch } from 'view-design';
+import { Spin, Modal, Message, Switch } from 'view-design';
 import 'view-design/dist/styles/iview.css';
+Vue.prototype.$Spin = Spin;
 Vue.prototype.$Message = Message;
 Vue.prototype.$Modal = Modal;
 Message.config({
