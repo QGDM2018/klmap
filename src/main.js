@@ -13,6 +13,9 @@ require("echarts/lib/component/polar");
 // 引入提示框和标题组件
 require('echarts/lib/component/tooltip');
 require('echarts/lib/component/title');
+// 引入画点画图
+require("echarts/lib/component/markPoint");
+require("echarts/lib/component/markLine");
 Vue.prototype.$echarts = echarts;
 
 

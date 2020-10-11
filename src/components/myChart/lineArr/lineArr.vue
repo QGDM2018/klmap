@@ -23,7 +23,7 @@
     }
 
     .lineChart:hover {
-      background-color: rgba(240, 240, 240, 0.9);
+      background-color: rgba(230, 230, 230, 1);
     }
 
     .show1 {

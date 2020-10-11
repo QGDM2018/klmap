@@ -5,14 +5,14 @@
     width: 100vw;
     #barChart {
       position: absolute;
-      top: 8vh;
-      right: 7em;
-      height: 27em;
-      width: 25em;
+      top: 5vh;
+      right: 1em;
+      height: 30em;
+      width: 28em;
     }
     #pieChart {
       position: absolute;
-      top: 15vh;
+      top: 10vh;
       left: 1em;
       height: 25em;
       width: 40em;

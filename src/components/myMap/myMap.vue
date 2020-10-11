@@ -8,10 +8,10 @@
     .swith {
       position: absolute;
       top: 20vh;
-      left: 50%;
+      right: 50%;
       font-size: 18px;
       font-weight: bold;
-      transform: translateX(-50vh);
+      transform: translateX(50vh);
     }
 
     .upload {
@@ -19,21 +19,24 @@
       align-items: center;
       position: absolute;
       top: 20vh;
-      right: 50%;
+      left: 50%;
       height: 2em;
       line-height: 2em;
       font-size: 18px;
       font-weight: bold;
-      transform: translateX(50vh);
+      transform: translateX(-50vh);
+
       .button {
         display: flex;
         cursor: pointer;
         align-items: center;
         padding: 0 0.5em;
         background-color: #000;
+
         img {
           width: 1.5em;
         }
+
         div {
           margin-left: 0.3em;
           font-size: 0.9em;
@@ -41,8 +44,11 @@
         }
 
       }
+
       .info {
         position: relative;
+        margin-left: 1em;
+
         input {
           position: absolute;
           z-index: 1;
@@ -50,11 +56,14 @@
           width: 100%;
           background-color: #f40;
           overflow: hidden;
-          opacity: 0.3;
+          opacity: 0;
+          border: 1px solid #000;
         }
+
         span {
-          line-height: 1.5em;
-          color: #666;
+          color: #333;
+          font-size: 15px;
+          font-weight: lighter;
         }
       }
     }
@@ -110,8 +119,8 @@
 <template>
   <div class="myMap">
     <div class="swith">
+      <span>展示全部图谱&nbsp</span>
       <i-switch v-model="showAll"></i-switch>
-      <span>&nbsp;展示全部图谱</span>
     </div>
     <div class="upload">
       <div class="button" @click="sureUpload">
@@ -119,7 +128,7 @@
         <div>上传</div>
       </div>
       <div class="info">
-        <input type="file" @change="upLoadFile">
+        <input type="file" @change="upLoadFile" ref="input">
         <span>{{upLoadInfo}}</span>
       </div>
     </div>
@@ -137,35 +146,60 @@
 <script>
   import myMap1 from "@/utils/myMap1.js";
   import myMap2 from "@/utils/myMap2.js";
+
+  let myMap_file = null;
+  let isUpload = false;
   export default {
     name: "myMap",
     data() {
       return {
         showAll: false,
-        upLoadInfo: '上传文件更新图谱',
+        upLoadInfo: '选择文件更新图谱',
       };
     },
     methods: {
-      upLoadFile() {
-        let file = e.target.files[0];
-        // 校验文件类型
-        let judgeResult = this.judgeFile(file);
-        if (judgeResult !== 'OK') {
-          this.$Modal.warning({
-            title: "错误提示",
-            content: judgeResult
-          });
-          e.target.value = "";
-          return;
-        } else {
-          // 校验成功，放入formdata
-          let formData = new window.FormData();
-          formData.append("file", file, file.name);
-        }
-        // 清空input
-        e.target.value = "";
+      upLoadFile(e) {
+        myMap_file = this.$refs.input.files[0];
+        this.upLoadInfo = myMap_file.name;
       },
       sureUpload() {
+        if (isUpload) {
+          this.$Message.warning('正在上传，请不要频繁操作哦');
+          return;
+        }
+        if (!myMap_file) {
+          this.$Message.warning('请选择一个文件');
+          return;
+        }
+        let formData = new window.FormData();
+        formData.append("file", myMap_file, myMap_file.name);
+        this.$Modal.confirm({
+          title: '上传文件更新图谱',
+          content: `你确定要上传文件"${myMap_file.name}"`,
+          onOk: () => {
+            this.httpUpload(formData);
+          },
+        });
+      },
+      httpUpload(formData) {
+        isUpload = true;
+        // 正在上传
+        setTimeout(()=>{
+          // 上传
+          // 上传完毕后，更新图表
+          // 更新图表后：
+
+
+          isUpload = false;
+          // 上传完毕
+          myMap_file = null;
+          // myMap_file 文件置空
+          this.$refs.input.value = ''
+          // input 的 file 置空
+          this.upLoadInfo = '选择文件更新图谱';
+          // 更新 info 文本提示
+          this.$Message.info('上传成功');
+        }, 1000)
 
       }
     },
