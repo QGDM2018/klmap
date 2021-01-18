@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import axios from 'axios';
+import testData from './test';
 import { Message } from 'view-design';
 var width = document.body.clientWidth; // svg 宽度
 var height = document.body.clientHeight; // svg 高度
@@ -17,6 +18,7 @@ let httpUrl =
     process.env.NODE_ENV === "production"
         ? process.env.VUE_APP_URL
         : '/localHttp';
+
 let labelArr = [
     '民航',
     '通用航空',
@@ -135,7 +137,7 @@ function init() {
     // 最外层的g，作为zoom事件操控容器
     g = svg.append("g").attr("class", 'svgCon')
 
-    //设置一个color的颜色比例尺，为了让不同的扇形呈现不同的颜色
+    // 设置一个color的颜色比例尺，为了让不同的点呈现不同的颜色
     colorScale = d3.scaleOrdinal()
         .domain(labelArr)
         .range(colorArr);
@@ -147,26 +149,27 @@ function init() {
         .force("charge", d3.forceManyBody().strength(-1500))
         .force("collide", d3.forceCollide(50).strength(1).iterations(5))
 
-    //生成节点数据
+    // 生成节点数据
     forceSimulation.nodes(nodes)
+    console.log(nodes)
 
-    //生成边数据
+    // 生成边数据
     forceSimulation.force("link")
         .links(edges)
         .distance(150)
         .strength(1)
 
-    //设置图形的中心位置
+    // 设置图形的中心位置
     forceSimulation.force("center")
         .x(width / 2)
         .y(height / 2);
 
-    //绘制边
+    // 边容器
     links = g.append("g")
         .attr('class', 'linksCon')
         .selectAll("line")
 
-    //边上文字
+    // 边上文字容器
     linksText = g.append("g")
         .attr("class", 'linksTextCon')
         .selectAll("text")
@@ -185,10 +188,10 @@ function addNodes(newNode) {
     nodes.push(newNode);
     // 新建一个<g>
     let new_gs = gs
-        .data(nodes, d => d.id)
+        .data(nodes, d => d.ID)
         .enter()
         .append("g")
-        .attr('test_id', d => d.id)
+        .attr('test_id', d => d.ID)
         .attr('class', (d, i) => `circleText_${i}`)
         .attr("cursor", 'pointer')
         .call(d3.drag()
@@ -202,7 +205,7 @@ function addNodes(newNode) {
         .attr("r", 25)
         .attr('stroke', '#333')
         .attr('stroke-width', '2px')
-        .attr("fill", d => colorScale(d.label))
+        .attr("fill", d => colorScale(d['标签']))
         .attr("fill-opacity", "1")
         .on('mouseenter', function (d, i) {
             d3.select(`.myMap2 .circleText_${i} .tooltips`)
@@ -222,35 +225,35 @@ function addNodes(newNode) {
         .attr("font-size", 16)
         .attr("text-anchor", 'middle')
         .attr('class', (d, i) => `text_${i}`)
-        .text(d => d.name)
+        .text(d => d['名称'])
 
     // 在<g>里写入悬浮框
     let tooltipsCon = new_gs.append("g")
         .attr('class', 'tooltips')
-        .attr('transform', 'translate(-120, -215)')
+        .attr('transform', 'translate(-140, -245)')
         .attr('display', 'none')
 
     tooltipsCon.append('path')
         .attr('fill', 'rgba(1,1,1, 0.5)')
-        .attr('transform', ' scale(0.6)')
+        .attr('transform', ' scale(0.65)')
         .attr('d', 'M 32.1,42.7 54.5,257 185,257 193,269 200,282 207,269 214,257 342,257 368,23.9 Z')
 
     tooltipsCon.append('foreignObject')
         .attr("x", 35)
         .attr("y", 30)
-        .attr("width", 170)
-        .attr('height', 120)
+        .attr("width", 190)
+        .attr('height', 130)
         .attr('class', 'd3_tipsCon')
-        .html(d => `
-            <p class="d3_tips"> 
-                <span class="left">label：</span>
-                <span class="right">${d.label ? d.label : '暂无'}</span>
-            </p>
-            <p class="d3_tips"> 
-                <span class="left">value：</span>
-                <span class="right">${d.value ? d.value : '暂无'}</span>
-            </p>
-        `)
+        .html(d => {
+            let str = `<div style="display: flex;justify-content: center;flex-direction: column;height: 100%;width: 100%;">`;
+            for (let attr in d) {
+                if (attr == 'ID' || attr == 'clicked') {
+                    continue;
+                }
+                str += `<p class="d3_tips"> <span class="left">${attr}：</span><span class="right">${d[attr] ? d[attr] : '暂无'}</span></p>`
+            }
+            return str+"</div>";
+        })
 
     gs = new_gs.merge(gs); // 合并
     forceSimulation.nodes(nodes);
@@ -261,7 +264,7 @@ function addEdges(newEdge) {
     // 写入新的line
     links = links
         .data(edges, (d) => {
-            return `${d.source.name}-${d.target.name}-${d.relation}`
+            return `${d.source['名称']}-${d.target['名称']}-${d.relation}`
         })
         .enter()
         .append("line")
@@ -273,7 +276,7 @@ function addEdges(newEdge) {
     // 给line写入新的text
     linksText = linksText
         .data(edges, (d) => {
-            return `${d.source.name}-${d.target.name}-${d.relation}`
+            return `${d.source['名称']}-${d.target['名称']}-${d.relation}`
         })
         .enter()
         .append("text")
@@ -299,11 +302,11 @@ function addEdges(newEdge) {
 
 }
 // 查找指定id的点在数组nodes的位置
-function findNodesIndex(id) {
+function findNodesIndex(ID) {
     let i;
     let len = nodes.length;
     for (i = 0; i < len; i++) {
-        if (nodes[i].id == id) {
+        if (nodes[i].ID == ID) {
             break;
         }
     }
@@ -312,39 +315,63 @@ function findNodesIndex(id) {
 // 画全部线条
 function drawAll() {
     init();
-    let node_d = { id: 0, name: "民用航空", label: "民航", clicked: true };
+    let node_d = { ID: 0, '名称': "民用航空", '标签': "民航", clicked: true };
     addNodes(node_d);
-    axios.get(`${httpUrl}/graph/`)
-        .then(res => {
-            if (res.data.code == 100) {
-                let graph = res.data.data.graph;
-                let len = graph.length;
-                for (let i = 0; i < len; i++) {
-                    let target = findNodesIndex(graph[i].end_node.id);
-                    let source = findNodesIndex(graph[i].start_node.id);
-                    if (target == nodes.length) {
-                        // 该点未画，则在svg新画这个点
-                        addNodes({
-                            clicked: true,
-                            ...graph[i].end_node
-                        })
-                    }
-                    // 连线
-                    addEdges({
-                        source: source,
-                        target: target,
-                        relation: graph[i].relationship
-                    })
-                }
-                forceSimulation.alpha(1).restart();
-            } else {
-                Message.warning(res.data.msg);
+    process.nextTick(()=>{
+        let graph = testData;
+        let len = graph.length;
+        for (let i = 0; i < len; i++) {
+            let target = findNodesIndex(graph[i].end_node.ID);
+            let source = findNodesIndex(graph[i].start_node.ID);
+            if (target == nodes.length) {
+                // 该点未画，则在svg新画这个点
+                addNodes({
+                    clicked: true,
+                    ...graph[i].end_node
+                })
             }
-        })
-        .catch(err => {
-            console.error(err)
-            ctrlClick = false;
-        })
+            // 连线
+            addEdges({
+                source: source,
+                target: target,
+                relation: graph[i].relationship
+            })
+        }
+        console.log(testData)
+        console.log(nodes)
+        forceSimulation.alpha(1).restart();
+    })
+    // axios.get(`${httpUrl}/graph/`)
+    //     .then(res => {
+    //         if (res.data.code == 100) {
+    //             let graph = res.data.data.graph;
+    //             let len = graph.length;
+    //             for (let i = 0; i < len; i++) {
+    //                 let target = findNodesIndex(graph[i].end_node.ID);
+    //                 let source = findNodesIndex(graph[i].start_node.ID);
+    //                 if (target == nodes.length) {
+    //                     // 该点未画，则在svg新画这个点
+    //                     addNodes({
+    //                         clicked: true,
+    //                         ...graph[i].end_node
+    //                     })
+    //                 }
+    //                 // 连线
+    //                 addEdges({
+    //                     source: source,
+    //                     target: target,
+    //                     relation: graph[i].relationship
+    //                 })
+    //             }
+    //             forceSimulation.alpha(1).restart();
+    //         } else {
+    //             Message.warning(res.data.msg);
+    //         }
+    //     })
+    //     .catch(err => {
+    //         console.error(err)
+    //         ctrlClick = false;
+    //     })
 }
 
 export default {

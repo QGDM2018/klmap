@@ -1,4 +1,5 @@
 <style scoped lang="scss">
+
 .svgTitle {
   display: flex;
   justify-content: center;
@@ -6,12 +7,13 @@
   height: 10vh;
   svg {
     height: 10vh;
-    width: 20em;
-    font-size: 7vh;
-    // background: #f5e
+    width: 22em;
+    font-size: 6vh;
   }
   .text-line {
+    font-family: Heiti;
     letter-spacing: 0.1em;
+    font-weight: bold;
   }
   .anim-shape {
     transform: translate(0, 0);
@@ -27,17 +29,17 @@
 }
 @keyframes moving-panel {
   0% {
-    transform: translate(-1.1em, 0);
+    transform: translate(-1.5em, 0);
   }
   100% {
-    transform: translate(1.1em, 0);
+    transform: translate(1.5em, 0);
   }
 }
 </style>
 
 <template>
   <div class="svgTitle">
-    <svg>
+    <svg xmlns="http://www.w3.org/2000/svg"version="1.1">
       <clipPath id="cp-text">
         <text text-anchor="middle" x="50%" y="50%" dy=".35em" class="text-line">{{msg}}</text>
       </clipPath>
@@ -57,7 +59,6 @@
 
 <script>
 export default {
-  name: "svgTitle",
   props: {
     msg: String
   }

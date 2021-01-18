@@ -184,10 +184,10 @@ function addNodes(newNode) {
     nodes.push(newNode);
     // 新建一个<g>
     let new_gs = gs
-        .data(nodes, d => d.id)
+        .data(nodes, d => d.ID)
         .enter()
         .append("g")
-        .attr('test_id', d => d.id)
+        .attr('test_id', d => d.ID)
         .attr('class', (d, i) => `circleText_${i}`)
         .attr("cursor", 'pointer')
         .call(d3.drag()
@@ -204,7 +204,7 @@ function addNodes(newNode) {
         .attr("r", 25)
         .attr('stroke', '#333')
         .attr('stroke-width', '0')
-        .attr("fill", d => colorScale(d.label))
+        .attr("fill", d => colorScale(d['标签']))
         .attr("fill-opacity", "1")
         .on('mouseenter', function (d, i) {
             d3.select(`.myMap1 .circleText_${i} .tooltips`)
@@ -224,35 +224,35 @@ function addNodes(newNode) {
         .attr("font-size", 16)
         .attr("text-anchor", 'middle')
         .attr('class', (d, i) => `text_${i}`)
-        .text(d => d.name)
+        .text(d => d['名称'])
 
     // 在<g>里写入悬浮框
     let tooltipsCon = new_gs.append("g")
         .attr('class', 'tooltips')
-        .attr('transform', 'translate(-120, -215)')
+        .attr('transform', 'translate(-140, -245)')
         .attr('display', 'none')
 
     tooltipsCon.append('path')
         .attr('fill', 'rgba(1,1,1, 0.5)')
-        .attr('transform', ' scale(0.6)')
+        .attr('transform', ' scale(0.65)')
         .attr('d', 'M 32.1,42.7 54.5,257 185,257 193,269 200,282 207,269 214,257 342,257 368,23.9 Z')
 
     tooltipsCon.append('foreignObject')
         .attr("x", 35)
         .attr("y", 30)
-        .attr("width", 170)
-        .attr('height', 120)
+        .attr("width", 190)
+        .attr('height', 130)
         .attr('class', 'd3_tipsCon')
-        .html(d => `
-            <p class="d3_tips"> 
-                <span class="left">label：</span>
-                <span class="right">${d.label ? d.label : '暂无'}</span>
-            </p>
-            <p class="d3_tips"> 
-                <span class="left">value：</span>
-                <span class="right">${d.value ? d.value : '暂无'}</span>
-            </p>
-        `)
+        .html(d => {
+            let str = `<div style="display: flex;justify-content: center;flex-direction: column;height: 100%;width: 100%;">`;
+            for (let attr in d) {
+                if (attr == 'ID' || attr == 'clicked') {
+                    continue;
+                }
+                str += `<p class="d3_tips"> <span class="left">${attr}：</span><span class="right">${d[attr] ? d[attr] : '暂无'}</span></p>`
+            }
+            return str+"</div>";
+        })
 
     gs = new_gs.merge(gs); // 合并
     forceSimulation.nodes(nodes);
@@ -263,7 +263,7 @@ function addEdges(newEdge) {
     // 写入新的line
     links = links
         .data(edges, (d) => {
-            return `${d.source.name}-${d.target.name}-${d.relation}`
+            return `${d.source['名称']}-${d.target['名称']}-${d.relation}`
         })
         .enter()
         .append("line")
@@ -275,7 +275,7 @@ function addEdges(newEdge) {
     // 给line写入新的text
     linksText = linksText
         .data(edges, (d) => {
-            return `${d.source.name}-${d.target.name}-${d.relation}`
+            return `${d.source['名称']}-${d.target['名称']}-${d.relation}`
         })
         .enter()
         .append("text")
@@ -301,16 +301,17 @@ function addEdges(newEdge) {
 
 }
 // 查找指定id的点在数组nodes的位置
-function findNodesIndex(id) {
+function findNodesIndex(ID) {
     let i;
     let len = nodes.length;
     for (i = 0; i < len; i++) {
-        if (nodes[i].id == id) {
+        if (nodes[i].ID == ID) {
             break;
         }
     }
     return i;
 }
+
 // 点击一个点
 function clickFun(d, source) {
     if (ctrlClick) {
@@ -323,7 +324,33 @@ function clickFun(d, source) {
         return;
     }
     d.clicked = true;
-    axios.get(`${httpUrl}/graph/${d.id}/`)
+    // process.nextTick(()=>{
+    //     let graph = getTestData(d.ID);
+    //     let len = graph.length;
+    //
+    //     for (let i = 0; i < len; i++) {
+    //         let index = findNodesIndex(graph[i].end_node.ID);
+    //         if (index == nodes.length) {
+    //             // 该点未画，则在svg新画这个点
+    //             addNodes({
+    //                 clicked: false,
+    //                 ...graph[i].end_node
+    //             })
+    //         }
+    //             // 连线
+    //         addEdges({
+    //             source: source,
+    //             target: index,
+    //             relation: graph[i].relationship
+    //         })
+    //     }
+    //     forceSimulation.alpha(1).restart();
+    //     ctrlClick = false;
+    //     d3.select(`.myMap1 .circleText_${source}`)
+    //         .select('circle')
+    //         .attr('stroke-width', '2px')
+    // });
+    axios.get(`${httpUrl}/graph/${d.ID}/`)
         .then(res => {
             if (res.data.code == 100) {
                 let graph = res.data.data.graph;
@@ -331,7 +358,7 @@ function clickFun(d, source) {
                 if (len != 0) {
                     console.log(graph)
                     for (let i = 0; i < len; i++) {
-                        let index = findNodesIndex(graph[i].end_node.id);
+                        let index = findNodesIndex(graph[i].end_node.ID);
                         if (index == nodes.length) {
                             // 该点未画，则在svg新画这个点
                             addNodes({
@@ -365,14 +392,73 @@ function clickFun(d, source) {
 }
 function drawStart() {
     let node_d = { 
-        id: 0, 
-        name: "民用航空",
-        label: "民航", 
+        'ID': 0,
+        '名称': "民用航空",
+        '标签': "民航",
         clicked: false 
     };
     init();
     addNodes(node_d);
     clickFun(node_d, 0);
+}
+
+// 生成测试数据
+let _id = 99;
+function getTestData(id) {
+    return [
+        {
+            "start_node": {
+                "ID": id,
+                "名称": `点${id}`,
+                "标签": "\u6c11\u822a"
+            },
+            "end_node": {
+                "ID": ++_id,
+                "名称": `点${_id}`,
+                "标签": "\u793e\u4f1a\u8d23\u4efb"
+            },
+            "relationship": "测试关系"
+        },
+        {
+            "start_node": {
+                "ID": id,
+                "名称": `点${id}`,
+                "标签": "\u6c11\u822a"
+            },
+            "end_node": {
+                "ID": ++_id,
+                "名称": `点${_id}`,
+                "标签": "\u793e\u4f1a\u8d23\u4efb"
+            },
+            "relationship": "测试关系"
+        },
+        {
+            "start_node": {
+                "ID": id,
+                "名称": `点${id}`,
+                "标签": "\u6c11\u822a"
+            },
+            "end_node": {
+                "ID": ++_id,
+                "名称": `点${_id}`,
+                "标签": "\u793e\u4f1a\u8d23\u4efb"
+            },
+            "relationship": "测试关系"
+        },
+        {
+            "start_node": {
+                "ID": id,
+                "名称": `点${id}`,
+                "标签": "\u6c11\u822a"
+            },
+            "end_node": {
+                "ID": ++_id,
+                "名称": `点${_id}`,
+                "标签": "\u793e\u4f1a\u8d23\u4efb"
+            },
+            "relationship": "测试关系"
+        },
+    ]
 }
 export default {
     drawStart

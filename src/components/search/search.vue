@@ -61,8 +61,13 @@
 </template>
 
 <script>
+  import test from '../../components/svgTitle'
 import dialogCon from "./dialogCon/dialogCon.vue";
 export default {
+  components: {
+    dialogCon,
+    test
+  },
   data() {
     return {
       inputStr: ""
@@ -103,8 +108,6 @@ export default {
         });
     }
   },
-  components: {
-    dialogCon
-  }
+
 };
 </script>

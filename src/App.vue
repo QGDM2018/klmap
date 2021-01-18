@@ -1,9 +1,8 @@
 <style lang="scss">
   @font-face {
-    font-family: "title";
+    font-family: title;
     src: url("./assets/title.ttf");
   }
-
   * {
     padding: 0;
     margin: 0;
@@ -25,14 +24,14 @@
 
     .top {
       position: absolute;
-      z-index: 1;
+      z-index: 1000;
       top: 0;
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
-      font-family: "title";
       height: 18vh;
-
+      width: 100vw;
+      font-family: title;
       .nav {
         position: relative;
         margin: 0 auto;
@@ -135,8 +134,8 @@
   import index from "@/views/index.vue";
   export default {
     components: {
-      index,
-      svgTitle
+      svgTitle,
+      index
     },
     methods: {
       toMap() {

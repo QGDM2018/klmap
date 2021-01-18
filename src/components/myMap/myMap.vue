@@ -100,14 +100,16 @@
     }
 
     .d3_tips {
+      width: 100%;
       font-size: 16px;
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: center;
       color: #fff;
 
       .left {
         display: block;
+        font-weight: bold;
         width: 30%;
       }
 
@@ -187,25 +189,28 @@
       httpUpload(formData) {
         isUpload = true; // 正在上传
         this.$Spin.show(); // 显示遮罩
-        setTimeout(()=>{
-          // 上传
-          // 上传完毕后，刷新页面
-          this.$Spin.hide();
-          window.location.reload();
+        this.$axios
+            .get(this.$httpUrl + "/upload/")
+            .then(res => {
+              if (res.data.code == 100) {
+                this.$Spin.hide();
+                window.location.reload();
 
-          // isUpload = false;
-          // // 上传完毕
-          // myMap_file = null;
-          // // myMap_file 文件置空
-          // this.$refs.input.value = ''
-          // // input 的 file 置空
-          // this.upLoadInfo = '选择文件更新图谱';
-          // // 更新 info 文本提示
-          // this.$Spin.hide();
-          // // 关闭遮罩
-          // this.$Message.info('上传成功');
-        }, 1000)
-
+                // isUpload = false;
+                // // 上传完毕
+                // myMap_file = null;
+                // // myMap_file 文件置空
+                // this.$refs.input.value = ''
+                // // input 的 file 置空
+                // this.upLoadInfo = '选择文件更新图谱';
+                // // 更新 info 文本提示
+                // this.$Spin.hide();
+                // // 关闭遮罩
+                // this.$Message.info('上传成功');
+              } else {
+                this.$Message.warning(res.data.msg);
+              }
+            });
       }
     },
     mounted() {
